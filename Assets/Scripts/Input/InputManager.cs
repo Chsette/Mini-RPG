@@ -6,19 +6,28 @@ public class InputManager
 {
     private PlayerControls playerControls;
 
-    public event Action OnJump;
+    public event Action<bool> OnParry;
+    public event Action OnAttack;
 
-    public Vector2 MoveDirection => playerControls.Gameplay.Move.ReadValue<Vector2>();
+    public Vector2 MoveDirection => 
+        playerControls.Gameplay.Move.ReadValue<Vector2>();
     
     public InputManager()
     {
         playerControls = new PlayerControls();
         playerControls.Enable();
-        playerControls.Gameplay.Jump.performed += OnJumpPerformed;
+        playerControls.Gameplay.Parry.performed += OnParryPerformedAndCanceled;
+        playerControls.Gameplay.Parry.canceled += OnParryPerformedAndCanceled;
+        playerControls.Gameplay.Attack.performed += OnAttackPerformed;
+    }    
+
+    private void OnParryPerformedAndCanceled(InputAction.CallbackContext context)
+    {
+        OnParry?.Invoke(context.ReadValueAsButton());
     }
 
-    private void OnJumpPerformed(InputAction.CallbackContext obj)
+    private void OnAttackPerformed(InputAction.CallbackContext context)
     {
-        OnJump?.Invoke();
+        OnAttack?.Invoke();
     }
 }

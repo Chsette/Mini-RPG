@@ -1,6 +1,6 @@
-using System;
 using UnityEngine;
 
+[RequireComponent(typeof(CharacterController))]
 public class PlayerController : MonoBehaviour
 {
     [SerializeField] private float velocity = 10;
@@ -18,10 +18,10 @@ public class PlayerController : MonoBehaviour
 
     private void Start()
     {
-        GameManager.Instance.inputManager.OnJump += HandleOnJump;
+        GameManager.Instance.inputManager.OnParry += HandleParry;
     }
 
-    private void Update()
+    private void FixedUpdate()
     {
         HandleMove();
     }
@@ -34,9 +34,8 @@ public class PlayerController : MonoBehaviour
         Vector3 cameraRelativeMovement =
             ConvertMoveDirectionToCameraSpace(moveDirection);
 
-        characterController.Move(cameraRelativeMovement *
-                                 velocity *
-                                 Time.deltaTime);
+        characterController.SimpleMove(cameraRelativeMovement *
+                                 velocity);
         RotatePlayerAccordingToInput(cameraRelativeMovement);
     }
 
@@ -78,7 +77,7 @@ public class PlayerController : MonoBehaviour
         return directionToMovePlayer;
     }
 
-    private void HandleOnJump()
+    private void HandleParry(bool isBlocking)
     {
         print("Estou pulando!!");
     }
