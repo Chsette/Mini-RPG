@@ -16,6 +16,7 @@ public class AnimController : MonoBehaviour
     {
         GameManager.Instance.inputManager.OnAttack += HandleAttackAnim;
         GameManager.Instance.inputManager.OnParry += HandleParryAnim;
+        GameManager.Instance.inputManager.OnRun += HandleRunAnim;
     }
 
     private void Update()
@@ -30,11 +31,17 @@ public class AnimController : MonoBehaviour
 
     private void HandleAttackAnim()
     {
+        animator.SetBool("isMoving", false);
         animator.SetTrigger("attack");
+    }
+
+    private void HandleRunAnim(bool isRunning)
+    {
+        animator.SetBool("isRunning", isRunning);
     }
 
     private void HandleParryAnim(bool isBlocking)
     {
-        animator.SetBool("isBlocking", isBlocking);
+        //animator.SetBool("isBlocking", isBlocking);
     }
 }

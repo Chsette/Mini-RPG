@@ -5,6 +5,9 @@ public class PlayerController : MonoBehaviour
 {
     [SerializeField] private float velocity = 10;
     [SerializeField] private float rotationvelocity = 10;
+    [SerializeField, Range(1, 5)] private float velocityMultiplier;
+
+    private float initialVelocity;
 
     private CharacterController characterController;
 
@@ -13,12 +16,15 @@ public class PlayerController : MonoBehaviour
 
     private void Awake()
     {
+        initialVelocity = velocity;
         characterController = GetComponent<CharacterController>();
     }
 
     private void Start()
     {
+        GameManager.Instance.inputManager.OnAttack += HandleAttack;
         GameManager.Instance.inputManager.OnParry += HandleParry;
+        GameManager.Instance.inputManager.OnRun += HandleRunVelocity;
     }
 
     private void FixedUpdate()
@@ -32,7 +38,7 @@ public class PlayerController : MonoBehaviour
         moveDirection.x = inputData.x;
         moveDirection.z = inputData.y;
         Vector3 cameraRelativeMovement =
-            ConvertMoveDirectionToCameraSpace(moveDirection);
+           ConvertMoveDirectionToCameraSpace(moveDirection);
 
         characterController.SimpleMove(cameraRelativeMovement *
                                  velocity);
@@ -77,8 +83,30 @@ public class PlayerController : MonoBehaviour
         return directionToMovePlayer;
     }
 
+    private void HandleAttack()
+    {
+        GameManager.Instance.inputManager.DisableGameplayInput();
+    }
+
     private void HandleParry(bool isBlocking)
     {
-        print("Estou pulando!!");
+        print("Estou bloqueando");
+    }
+
+    private void HandleRunVelocity(bool isRunning)
+    {
+        if (isRunning)
+        {
+            velocity *= velocityMultiplier;
+        }
+        else
+        {
+            velocity = initialVelocity;
+        }
+    }
+
+    private void EnableControls()
+    {
+        GameManager.Instance.inputManager.EnableGameplayInput();
     }
 }
