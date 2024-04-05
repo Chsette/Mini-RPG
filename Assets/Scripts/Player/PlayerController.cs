@@ -22,7 +22,6 @@ public class PlayerController : MonoBehaviour
 
     private void Start()
     {
-        GameManager.Instance.inputManager.OnAttack += HandleAttack;
         GameManager.Instance.inputManager.OnParry += HandleParry;
         GameManager.Instance.inputManager.OnRun += HandleRunVelocity;
     }
@@ -83,11 +82,6 @@ public class PlayerController : MonoBehaviour
         return directionToMovePlayer;
     }
 
-    private void HandleAttack()
-    {
-        GameManager.Instance.inputManager.DisableGameplayInput();
-    }
-
     private void HandleParry(bool isBlocking)
     {
         print("Estou bloqueando");
@@ -103,10 +97,5 @@ public class PlayerController : MonoBehaviour
         {
             velocity = initialVelocity;
         }
-    }
-
-    private void EnableControls()
-    {
-        GameManager.Instance.inputManager.EnableGameplayInput();
     }
 }
