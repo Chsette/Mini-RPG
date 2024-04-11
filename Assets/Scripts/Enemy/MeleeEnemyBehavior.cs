@@ -5,6 +5,7 @@ public class MeleeEnemyBehavior : BaseEnemy
     [Header("Melee Enemy properties")]
     [SerializeField] private float timeToWait;
     [SerializeField] private Transform[] movePoints;
+    [SerializeField] private float chaseSpeed = 5;
 
     private float walkCooldownTimer;
     private bool arrived;
@@ -32,6 +33,7 @@ public class MeleeEnemyBehavior : BaseEnemy
 
     private void ChasePlayer()
     {
+        navAgent.speed = chaseSpeed;
         Vector3 playerPosition = detector.GetCollidersInDetectArea()[0].
             GetComponent<Transform>().position;
 
@@ -40,6 +42,7 @@ public class MeleeEnemyBehavior : BaseEnemy
 
     private void HandlePatrol()
     {
+        navAgent.speed = base.speed;
         arrived = navAgent.remainingDistance <= 0.5f;        
 
         if (arrived)
