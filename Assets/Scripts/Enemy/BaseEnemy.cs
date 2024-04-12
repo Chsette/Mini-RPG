@@ -15,9 +15,9 @@ public abstract class BaseEnemy : MonoBehaviour
 
     protected virtual void Awake()
     {
-        navAgent = GetComponentInChildren<NavMeshAgent>();
-        animator = GetComponentInChildren<Animator>();
-        detector = GetComponentInChildren<Detector>();
+        navAgent = GetComponent<NavMeshAgent>();
+        animator = GetComponent<Animator>();
+        detector = GetComponent<Detector>();
     }
 
     protected void UpdateAgentDestination(Vector3 destination)

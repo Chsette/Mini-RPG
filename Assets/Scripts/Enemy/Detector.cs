@@ -8,19 +8,24 @@ public class Detector : MonoBehaviour
 
     public bool isInDetectArea()
     {
-        bool isInArea = GetCollidersInDetectArea().Length > 0;     
+        bool isInArea = GetCollidersInDetectAreaSphere().Length > 0;     
         return isInArea;
     }
 
-    public Collider[] GetCollidersInDetectArea()
+    public Collider[] GetCollidersInDetectAreaSphere()
     {
         return Physics.OverlapSphere(transform.position + detectorPositionOffset, 
             detectorSize, layerToDetect);
     }
 
+    public Collider[] GetCollidersInDetectAreaBox(Vector3 centerPosition, Vector3 boxSize)
+    {
+        return Physics.OverlapBox(centerPosition, boxSize, Quaternion.identity, layerToDetect);
+    }
+
     private void OnDrawGizmosSelected()
     {
-        Gizmos.color = Color.red;
+        Gizmos.color = Color.yellow;
 
         Gizmos.DrawWireSphere(transform.position + detectorPositionOffset, detectorSize);
     }

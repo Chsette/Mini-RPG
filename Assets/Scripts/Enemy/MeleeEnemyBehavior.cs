@@ -2,13 +2,19 @@ using UnityEngine;
 
 public class MeleeEnemyBehavior : BaseEnemy
 {
-    [Header("Melee Enemy properties")]
+    [Header("Melee Enemy basic properties")]
     [SerializeField] private float timeToWait;
     [SerializeField] private Transform[] movePoints;
     [SerializeField] private float chaseSpeed = 5;
 
+    [Header("Melee Attack properties")]
+    [SerializeField] private Vector3 attackPositionOffset;
+    [SerializeField] private Vector3 attackRange;
+
     private float walkCooldownTimer;
     private bool arrived;
+    private bool canAttack;
+    private bool canChase;
 
     protected override void Awake()
     {
@@ -21,7 +27,8 @@ public class MeleeEnemyBehavior : BaseEnemy
     protected override void Update()
     {
         animator.SetFloat("speed", navAgent.velocity.magnitude);
-        if (detector.isInDetectArea())
+        if(!canAttack) canChase = detector.isInDetectArea();
+        if (canChase)
         {
             ChasePlayer();
         }
@@ -34,16 +41,35 @@ public class MeleeEnemyBehavior : BaseEnemy
     private void ChasePlayer()
     {
         navAgent.speed = chaseSpeed;
-        Vector3 playerPosition = detector.GetCollidersInDetectArea()[0].
+
+        Vector3 playerPosition = detector.GetCollidersInDetectAreaSphere()[0].
             GetComponent<Transform>().position;
 
+        Collider[] detectedPlayers =
+            detector.
+            GetCollidersInDetectAreaBox(transform.position + attackPositionOffset,
+                                        attackRange);
+
+        bool isPlayerDetected = detectedPlayers.Length > 0;
+        if (isPlayerDetected)
+        {
+            canAttack = true;
+            AttackPlayer();
+        }
         UpdateAgentDestination(playerPosition);
+    }
+
+    private void AttackPlayer()
+    {
+        canChase = false;
+        navAgent.speed = 0;
+        animator.SetTrigger("attack");
     }
 
     private void HandlePatrol()
     {
         navAgent.speed = base.speed;
-        arrived = navAgent.remainingDistance <= 0.5f;        
+        arrived = navAgent.remainingDistance <= 0.5f;
 
         if (arrived)
         {
@@ -55,11 +81,18 @@ public class MeleeEnemyBehavior : BaseEnemy
             walkCooldownTimer = 0;
             UpdateAgentDestination(SortMovePoint());
         }
-    }  
+    }
 
     private Vector3 SortMovePoint()
     {
         int sortedIndex = Random.Range(0, movePoints.Length);
         return movePoints[sortedIndex].position;
+    }
+
+    private void OnDrawGizmos()
+    {
+        Gizmos.color = Color.red;
+
+        Gizmos.DrawWireCube(transform.position + attackPositionOffset, attackRange);
     }
 }
