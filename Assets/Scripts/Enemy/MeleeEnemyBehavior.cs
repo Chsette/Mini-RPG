@@ -1,9 +1,11 @@
 using UnityEngine;
 
+[RequireComponent(typeof(Health), typeof(Collider))]
 public class MeleeEnemyBehavior : BaseEnemy
 {
     [Header("Melee Enemy basic properties")]
     [SerializeField] private float timeToWait;
+    [SerializeField] private float attackCooldown;
     [SerializeField] private Transform[] movePoints;
     [SerializeField] private float chaseSpeed = 5;
 
@@ -12,6 +14,7 @@ public class MeleeEnemyBehavior : BaseEnemy
     [SerializeField] private Vector3 attackRange;
 
     private float walkCooldownTimer;
+    private float attackCooldownTimer;
     private bool arrived;
     private bool canAttack;
     private bool canChase;
@@ -19,15 +22,24 @@ public class MeleeEnemyBehavior : BaseEnemy
     protected override void Awake()
     {
         base.Awake();
-        navAgent.speed = speed;
-
+        navAgent.speed = base.speed;
+        GetComponent<Health>().OnHurt += HandleHurt;
         UpdateAgentDestination(SortMovePoint());
     }
 
     protected override void Update()
     {
-        animator.SetFloat("speed", navAgent.velocity.magnitude);
-        if(!canAttack) canChase = detector.isInDetectArea();
+        UpdateAnimParams();
+        if (!canAttack)
+        {
+            CountAttackTimer();
+        }
+        else
+        {
+            canChase = detector.isInDetectArea();
+        }
+
+
         if (canChase)
         {
             ChasePlayer();
@@ -38,30 +50,48 @@ public class MeleeEnemyBehavior : BaseEnemy
         }
     }
 
+    private void UpdateAnimParams()
+    {
+        animator.SetFloat("speed", base.navAgent.velocity.magnitude);
+    }
+
+    private void CountAttackTimer()
+    {
+        attackCooldownTimer += Time.deltaTime;
+        if (attackCooldownTimer >= attackCooldown)
+        {
+            attackCooldownTimer = 0;
+            canAttack = true;
+        }
+    }
+
     private void ChasePlayer()
     {
         navAgent.speed = chaseSpeed;
 
-        Vector3 playerPosition = detector.GetCollidersInDetectAreaSphere()[0].
-            GetComponent<Transform>().position;
+        Vector3 playerPosition = detector.GetCollidersInDetectAreaSphere()[0].GetComponent<Transform>().position;
 
-        Collider[] detectedPlayers =
-            detector.
-            GetCollidersInDetectAreaBox(transform.position + attackPositionOffset,
-                                        attackRange);
+        Collider[] detectedPlayerColliders = detector.GetCollidersInDetectAreaBox(transform.position + attackPositionOffset, attackRange);
 
-        bool isPlayerDetected = detectedPlayers.Length > 0;
+        bool isPlayerDetected = detectedPlayerColliders.Length > 0;
         if (isPlayerDetected)
         {
-            canAttack = true;
-            AttackPlayer();
+            HandleAttackPlayer(detectedPlayerColliders[0]);
         }
         UpdateAgentDestination(playerPosition);
     }
 
-    private void AttackPlayer()
+    private void HandleAttackPlayer(Collider playerCollider)
     {
+        if (!canAttack) return;
+
+        if (playerCollider.TryGetComponent(out Health playerHealth))
+        {
+            playerHealth.TakeDamage(base.damagePower);
+        }
+
         canChase = false;
+        canAttack = false;
         navAgent.speed = 0;
         animator.SetTrigger("attack");
     }
@@ -87,6 +117,12 @@ public class MeleeEnemyBehavior : BaseEnemy
     {
         int sortedIndex = Random.Range(0, movePoints.Length);
         return movePoints[sortedIndex].position;
+    }
+
+    private void HandleHurt()
+    {
+        print("Got damaged");
+        canAttack = false;
     }
 
     private void OnDrawGizmos()

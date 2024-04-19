@@ -1,15 +1,17 @@
 using UnityEngine;
 
-[RequireComponent(typeof(CharacterController))]
+[RequireComponent(typeof(CharacterController), typeof(Health), typeof(Detector))]
 public class PlayerController : MonoBehaviour
 {
     [SerializeField] private float velocity = 10;
     [SerializeField] private float rotationvelocity = 10;
     [SerializeField, Range(1, 5)] private float velocityMultiplier;
+    [SerializeField] private int damagePower;
 
     private float initialVelocity;
 
     private CharacterController characterController;
+    private Detector detector;
 
     private Vector3 moveDirection;
 
@@ -18,6 +20,8 @@ public class PlayerController : MonoBehaviour
     {
         initialVelocity = velocity;
         characterController = GetComponent<CharacterController>();
+        GetComponent<Health>().OnDie += HandleDeath;
+        detector = GetComponent<Detector>();
     }
 
     private void Start()
@@ -96,6 +100,28 @@ public class PlayerController : MonoBehaviour
         else
         {
             velocity = initialVelocity;
+        }
+    }
+
+    private void HandleDeath()
+    {
+        this.gameObject.layer = LayerMask.NameToLayer("Default");
+        GameManager.Instance.inputManager.DisableGameplayInput();
+    }
+
+    private void Attack()
+    {
+        print("GIVING DAMAGE");
+        Collider[] enemiesColliders = detector.GetCollidersInDetectAreaSphere();
+        print(enemiesColliders.Length);
+        foreach(Collider collider in enemiesColliders)
+        {
+            print("CHECKING ENEMIES");
+            if(collider.TryGetComponent(out Health enemyHealth))
+            {
+                print("SENDING DAMAGE");
+                enemyHealth.TakeDamage(damagePower);
+            }
         }
     }
 }

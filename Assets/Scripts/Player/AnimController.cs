@@ -1,15 +1,16 @@
-using System;
 using UnityEngine;
 
 public class AnimController : MonoBehaviour
 {
     private Animator animator;
+    private Health health;
 
     private bool isMoving =>  GameManager.Instance.inputManager.MoveDirection != Vector2.zero;
 
     private void Awake()
     {
         animator = GetComponent<Animator>();
+        health = GetComponent<Health>();        
     }
 
     private void Start()
@@ -17,6 +18,8 @@ public class AnimController : MonoBehaviour
         GameManager.Instance.inputManager.OnAttack += HandleAttackAnim;
         GameManager.Instance.inputManager.OnParry += HandleParryAnim;
         GameManager.Instance.inputManager.OnRun += HandleRunAnim;
+        health.OnHurt += PlayHurtAnim;
+        health.OnDie += PlayDieAnim;
     }
 
     private void Update()
@@ -43,5 +46,15 @@ public class AnimController : MonoBehaviour
     private void HandleParryAnim(bool isBlocking)
     {
         //animator.SetBool("isBlocking", isBlocking);
+    }
+
+    private void PlayHurtAnim()
+    {
+        animator.SetTrigger("hurt");
+    }
+
+    private void PlayDieAnim()
+    {
+        animator.SetTrigger("die");
     }
 }

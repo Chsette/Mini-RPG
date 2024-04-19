@@ -3,7 +3,7 @@ using UnityEngine;
 public class Detector : MonoBehaviour
 {
     [SerializeField] private float detectorSize;
-    [SerializeField] private Vector3 detectorPositionOffset;
+    [SerializeField] private Transform detectorPosition;
     [SerializeField] private LayerMask layerToDetect;
 
     public bool isInDetectArea()
@@ -14,7 +14,7 @@ public class Detector : MonoBehaviour
 
     public Collider[] GetCollidersInDetectAreaSphere()
     {
-        return Physics.OverlapSphere(transform.position + detectorPositionOffset, 
+        return Physics.OverlapSphere(detectorPosition.position, 
             detectorSize, layerToDetect);
     }
 
@@ -23,10 +23,10 @@ public class Detector : MonoBehaviour
         return Physics.OverlapBox(centerPosition, boxSize, Quaternion.identity, layerToDetect);
     }
 
-    private void OnDrawGizmosSelected()
+    private void OnDrawGizmos()
     {
         Gizmos.color = Color.yellow;
 
-        Gizmos.DrawWireSphere(transform.position + detectorPositionOffset, detectorSize);
+        Gizmos.DrawWireSphere(detectorPosition.position, detectorSize);
     }
 }
